@@ -301,7 +301,7 @@ export function PriceResultScreen({
                     </div>
                     <div className="shrink-0 text-right">
                       <div className="whitespace-nowrap leading-none text-foreground">
-                        <span className="text-[1.45rem] font-extrabold tracking-tight sm:text-[1.7rem]">
+                        <span className="text-[1.3rem] font-extrabold tracking-tight sm:text-[1.7rem]">
                           {normalizePrice(strategy.price).toLocaleString()}
                         </span>
                         <span className="ml-1 text-[0.8rem] font-semibold text-muted-foreground sm:text-sm">
