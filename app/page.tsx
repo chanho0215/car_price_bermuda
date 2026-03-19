@@ -145,7 +145,10 @@ export default function Home() {
 
       <div className="pt-[30px]">
         {currentScreen === 0 && (
-          <WelcomeScreen onStart={() => setCurrentScreen(1)} />
+          <WelcomeScreen onStart={() => {
+            setEditStep(null)
+            setCurrentScreen(1)
+          }} />
         )}
 
         {currentScreen === 1 && (
