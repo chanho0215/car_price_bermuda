@@ -52,18 +52,39 @@ const initialVehicleData: VehicleFormData = {
   options: [],
 }
 
+type Step =
+  | "manufacturer" | "model" | "trim" | "year" | "displacement" | "fuel"
+  | "transmission" | "vehicleClass" | "seats" | "color"
+  | "mileage" | "accident" | "options"
+
+type EditSection = "basic" | "status" | "accident" | "options"
+
+const sectionToStep: Record<EditSection, Step> = {
+  basic: "manufacturer",
+  status: "mileage",
+  accident: "accident",
+  options: "options"
+}
+
 export default function Home() {
   const [currentScreen, setCurrentScreen] = useState<0 | 1 | 2 | 3>(0)
   const [vehicleData, setVehicleData] = useState<VehicleFormData>(initialVehicleData)
   const [prediction, setPrediction] = useState<PredictionData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [editStep, setEditStep] = useState<Step | null>(null)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }, [currentScreen])
   const handleVehicleNext = (data: VehicleFormData) => {
     setVehicleData(data)
+    setEditStep(null)
     setCurrentScreen(2)
+  }
+
+  const handleEdit = (section: EditSection) => {
+    setEditStep(sectionToStep[section])
+    setCurrentScreen(1)
   }
 
   const handleSummaryNext = async () => {
@@ -105,15 +126,24 @@ export default function Home() {
         )}
 
         {currentScreen === 1 && (
-          <VehicleInputScreen onNext={handleVehicleNext} />
+          <VehicleInputScreen 
+            onNext={handleVehicleNext} 
+            onBack={() => setCurrentScreen(0)}
+            initialData={vehicleData}
+            initialStep={editStep}
+          />
         )}
 
         {currentScreen === 2 && (
           <SummaryScreen
             vehicleData={vehicleData}
             isLoading={isLoading}
-            onBack={() => setCurrentScreen(1)}
+            onBack={() => {
+              setEditStep(null)
+              setCurrentScreen(1)
+            }}
             onNext={handleSummaryNext}
+            onEdit={handleEdit}
           />
         )}
 

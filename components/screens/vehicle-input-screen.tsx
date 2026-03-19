@@ -1,16 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Check, SkipForward, Sun, Lightbulb, ParkingCircle, Video, Wind, Key, Navigation, Flame, Snowflake, Armchair } from "lucide-react"
-
-interface VehicleInputScreenProps {
-  onNext: (data: any) => void
-}
 
 type Step =
   | "manufacturer" | "model" | "trim" | "year" | "displacement" | "fuel"
   | "transmission" | "vehicleClass" | "seats" | "color"
   | "mileage" | "accident" | "options"
+
+interface VehicleInputScreenProps {
+  onNext: (data: any) => void
+  onBack?: () => void
+  initialData?: any
+  initialStep?: Step | null
+}
 
 const manufacturerModels: Record<string, string[]> = {
   "현대": [
@@ -79,27 +82,41 @@ const displacementPresets = [
   { value: "3342", label: "3,342cc" },
 ]
 
-export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
-  const [step, setStep] = useState<Step>("manufacturer")
-  const [formData, setFormData] = useState({
-    manufacturer: "",
-    model: "",
-    trim: "",
-    year: "",
-    displacement: "",
-    fuel: "",
-    transmission: "",
-    vehicleClass: "",
-    seats: "",
-    color: "",
-    mileage: "",
-    accident: "",
-    exchangeCount: "",
-    paintCount: "",
-    insuranceCount: "",
-    corrosion: "",
-    options: [] as string[]
-  })
+const defaultFormData = {
+  manufacturer: "",
+  model: "",
+  trim: "",
+  year: "",
+  displacement: "",
+  fuel: "",
+  transmission: "",
+  vehicleClass: "",
+  seats: "",
+  color: "",
+  mileage: "",
+  accident: "",
+  exchangeCount: "",
+  paintCount: "",
+  insuranceCount: "",
+  corrosion: "",
+  options: [] as string[]
+}
+
+export function VehicleInputScreen({ onNext, onBack, initialData, initialStep }: VehicleInputScreenProps) {
+  const [step, setStep] = useState<Step>(initialStep || "manufacturer")
+  const [formData, setFormData] = useState(initialData || defaultFormData)
+
+  useEffect(() => {
+    if (initialStep) {
+      setStep(initialStep)
+    }
+  }, [initialStep])
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData)
+    }
+  }, [initialData])
 
   const steps: Step[] = [
     "manufacturer", "model", "trim", "year", "displacement", "fuel",
@@ -136,6 +153,8 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
     const prevIndex = currentStepIndex - 1
     if (prevIndex >= 0) {
       setStep(steps[prevIndex])
+    } else if (onBack) {
+      onBack()
     }
   }
 
@@ -266,7 +285,7 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
                 selected={formData.year === year}
                 onClick={() => selectOption("year", year)}
               >
-                {year}년
+                {year}��
               </SelectButton>
             ))}
           </div>
@@ -473,7 +492,7 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
             </div>
 
             {/* 사고 이력 상세 */}
-            {formData.accident === "사고" && (
+            {formData.accident === "사고 이력 있음" && (
               <div className="mt-4 p-5 bg-card rounded-2xl border border-border space-y-5">
                 <div>
                   <p className="text-sm font-semibold text-foreground mb-3">교환 부위</p>
@@ -595,6 +614,14 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
             >
               해당 옵션 없음
             </button>
+            <button
+              type="button"
+              onClick={goToPrevStep}
+              className="w-full mt-4 h-12 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-2xl border border-border hover:border-foreground/30 bg-card"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>이전 단계로</span>
+            </button>
           </div>
         )
     }
@@ -625,7 +652,7 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
             className="p-2 -ml-2 text-foreground disabled:text-muted-foreground/50 transition-colors"
             aria-label="뒤로가기"
             onClick={goToPrevStep}
-            disabled={currentStepIndex === 0}
+            disabled={currentStepIndex === 0 && !onBack}
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -662,6 +689,18 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
 
           {/* Step Content */}
           {renderStepContent()}
+
+          {/* Bottom Back Button */}
+          {currentStepIndex > 0 && !isLastStep && (
+            <button
+              type="button"
+              onClick={goToPrevStep}
+              className="w-full mt-6 h-12 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-2xl border border-border hover:border-foreground/30 bg-card"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>이전 단계로</span>
+            </button>
+          )}
         </div>
       </main>
 
