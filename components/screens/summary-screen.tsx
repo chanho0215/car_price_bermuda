@@ -2,9 +2,12 @@
 
 import { ChevronLeft, Car, Gauge, Fuel, Calendar, Shield, AlertTriangle, FileText, Droplets, Activity, Cog, Users, Palette, Settings, Edit3, Sun, Lightbulb, ParkingCircle, Video, Wind, Key, Navigation, Flame, Snowflake, Armchair, CheckCircle2 } from "lucide-react"
 
+type EditSection = "basic" | "status" | "accident" | "options"
+
 interface SummaryScreenProps {
   onBack: () => void
   onNext: () => void
+  onEdit: (section: EditSection) => void
   vehicleData: any
   isLoading?: boolean
 }
@@ -35,7 +38,7 @@ const optionLabels: Record<string, string> = {
   leatherSeat: "가죽시트",
 }
 
-export function SummaryScreen({ onBack, onNext, vehicleData, isLoading = false }: SummaryScreenProps) {
+export function SummaryScreen({ onBack, onNext, onEdit, vehicleData, isLoading = false }: SummaryScreenProps) {
 
   const InfoRow = ({ 
     icon: Icon, 
@@ -135,7 +138,7 @@ export function SummaryScreen({ onBack, onNext, vehicleData, isLoading = false }
           </div>
 
           {/* Basic Info */}
-          <SectionCard title="차량 기본 정보" onEdit={onBack}>
+          <SectionCard title="차량 기본 정보" onEdit={() => onEdit("basic")}>
             <InfoRow icon={Car} label="제조사" value={vehicleData.manufacturer} />
             <InfoRow icon={Car} label="모델" value={vehicleData.model} />
             <InfoRow icon={Settings} label="트림" value={vehicleData.trim} empty={!vehicleData.trim} />
@@ -149,7 +152,7 @@ export function SummaryScreen({ onBack, onNext, vehicleData, isLoading = false }
           </SectionCard>
 
           {/* Vehicle Status */}
-          <SectionCard title="차량 상태" onEdit={onBack}>
+          <SectionCard title="차량 상태" onEdit={() => onEdit("status")}>
             <InfoRow icon={Gauge} label="주행거리" value={`${Number(vehicleData.mileage).toLocaleString()}km`} />
             <InfoRow 
               icon={Shield} 
@@ -161,7 +164,7 @@ export function SummaryScreen({ onBack, onNext, vehicleData, isLoading = false }
 
           {/* Accident Details */}
           {vehicleData.accident === "사고 이력 있음" && (
-            <SectionCard title="사고 관련 정보" onEdit={onBack}>
+            <SectionCard title="사고 관련 정보" onEdit={() => onEdit("accident")}>
               <InfoRow icon={AlertTriangle} label="교환 부위" value={vehicleData.exchangeCount} alert />
               <InfoRow icon={AlertTriangle} label="판금 부위" value={vehicleData.paintCount} alert />
               <InfoRow 
@@ -180,7 +183,7 @@ export function SummaryScreen({ onBack, onNext, vehicleData, isLoading = false }
           )}
 
           {/* Options */}
-          <SectionCard title={`주요 옵션 (${vehicleData.options.length}개)`} onEdit={onBack}>
+          <SectionCard title={`주요 옵션 (${vehicleData.options.length}개)`} onEdit={() => onEdit("options")}>
             {vehicleData.options.length > 0 ? (
               <div className="py-3">
                 <div className="flex flex-wrap gap-2">

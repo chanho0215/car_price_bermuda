@@ -1,16 +1,19 @@
 "use client"
 
-import { useState } from "react"
-import { ChevronLeft, ChevronRight, Check, SkipForward, Sun, Lightbulb, ParkingCircle, Video, Wind, Key, Navigation, Flame, Snowflake, Armchair } from "lucide-react"
-
-interface VehicleInputScreenProps {
-  onNext: (data: any) => void
-}
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight, Check, SkipForward, Sun, Lightbulb, ParkingCircle, Video, Wind, Key, Navigation, Flame, Snowflake, Armchair, Menu, X } from "lucide-react"
 
 type Step =
   | "manufacturer" | "model" | "trim" | "year" | "displacement" | "fuel"
   | "transmission" | "vehicleClass" | "seats" | "color"
   | "mileage" | "accident" | "options"
+
+interface VehicleInputScreenProps {
+  onNext: (data: any) => void
+  onBack?: () => void
+  initialData?: any
+  initialStep?: Step | null
+}
 
 const manufacturerModels: Record<string, string[]> = {
   "현대": [
@@ -79,27 +82,42 @@ const displacementPresets = [
   { value: "3342", label: "3,342cc" },
 ]
 
-export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
-  const [step, setStep] = useState<Step>("manufacturer")
-  const [formData, setFormData] = useState({
-    manufacturer: "",
-    model: "",
-    trim: "",
-    year: "",
-    displacement: "",
-    fuel: "",
-    transmission: "",
-    vehicleClass: "",
-    seats: "",
-    color: "",
-    mileage: "",
-    accident: "",
-    exchangeCount: "",
-    paintCount: "",
-    insuranceCount: "",
-    corrosion: "",
-    options: [] as string[]
-  })
+const defaultFormData = {
+  manufacturer: "",
+  model: "",
+  trim: "",
+  year: "",
+  displacement: "",
+  fuel: "",
+  transmission: "",
+  vehicleClass: "",
+  seats: "",
+  color: "",
+  mileage: "",
+  accident: "",
+  exchangeCount: "",
+  paintCount: "",
+  insuranceCount: "",
+  corrosion: "",
+  options: [] as string[]
+}
+
+export function VehicleInputScreen({ onNext, onBack, initialData, initialStep }: VehicleInputScreenProps) {
+  const [step, setStep] = useState<Step>(initialStep || "manufacturer")
+  const [formData, setFormData] = useState(initialData || defaultFormData)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  useEffect(() => {
+    if (initialStep) {
+      setStep(initialStep)
+    }
+  }, [initialStep])
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData)
+    }
+  }, [initialData])
 
   const steps: Step[] = [
     "manufacturer", "model", "trim", "year", "displacement", "fuel",
@@ -136,6 +154,8 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
     const prevIndex = currentStepIndex - 1
     if (prevIndex >= 0) {
       setStep(steps[prevIndex])
+    } else if (onBack) {
+      onBack()
     }
   }
 
@@ -473,7 +493,7 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
             </div>
 
             {/* 사고 이력 상세 */}
-            {formData.accident === "사고" && (
+            {formData.accident === "사고 이력 있음" && (
               <div className="mt-4 p-5 bg-card rounded-2xl border border-border space-y-5">
                 <div>
                   <p className="text-sm font-semibold text-foreground mb-3">교환 부위</p>
@@ -595,6 +615,14 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
             >
               해당 옵션 없음
             </button>
+            <button
+              type="button"
+              onClick={goToPrevStep}
+              className="w-full mt-4 h-12 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-2xl border border-border hover:border-foreground/30 bg-card"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>이전 단계로</span>
+            </button>
           </div>
         )
     }
@@ -625,13 +653,84 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
             className="p-2 -ml-2 text-foreground disabled:text-muted-foreground/50 transition-colors"
             aria-label="뒤로가기"
             onClick={goToPrevStep}
-            disabled={currentStepIndex === 0}
+            disabled={currentStepIndex === 0 && !onBack}
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <h1 className="flex-1 text-center text-base font-semibold text-foreground">내 차 시세 조회</h1>
-          <div className="w-10" />
+          <button
+            className="p-2 -mr-2 text-foreground transition-colors"
+            aria-label="단계 목록"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
+
+        {/* Step Navigation Menu */}
+        {isMenuOpen && (
+          <div className="absolute top-14 right-4 w-56 bg-card border border-border rounded-2xl shadow-lg overflow-hidden z-20">
+            <div className="py-2 max-h-80 overflow-y-auto">
+              {steps.map((s, index) => {
+                const isCompleted = index < currentStepIndex
+                const isCurrent = index === currentStepIndex
+                const isAccessible = index <= currentStepIndex
+                
+                return (
+                  <button
+                    key={s}
+                    disabled={!isAccessible}
+                    onClick={() => {
+                      if (isAccessible) {
+                        setStep(s)
+                        setIsMenuOpen(false)
+                      }
+                    }}
+                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-left transition-colors ${
+                      isCurrent
+                        ? "bg-primary/10"
+                        : isAccessible
+                        ? "hover:bg-muted/50"
+                        : ""
+                    } ${!isAccessible ? "opacity-40 cursor-not-allowed" : ""}`}
+                  >
+                    <span
+                      className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-semibold shrink-0 ${
+                        isCompleted
+                          ? "bg-primary text-primary-foreground"
+                          : isCurrent
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {isCompleted ? <Check className="w-3.5 h-3.5" /> : index + 1}
+                    </span>
+                    <span
+                      className={`text-sm ${
+                        isCurrent
+                          ? "font-semibold text-primary"
+                          : isCompleted
+                          ? "text-foreground"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {stepInfo[s].title}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Menu Backdrop */}
+        {isMenuOpen && (
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsMenuOpen(false)}
+          />
+        )}
+
         {/* Progress */}
         <div className="px-4 pb-4">
           <div className="flex items-center justify-between text-xs mb-2">
@@ -662,6 +761,18 @@ export function VehicleInputScreen({ onNext }: VehicleInputScreenProps) {
 
           {/* Step Content */}
           {renderStepContent()}
+
+          {/* Bottom Back Button */}
+          {currentStepIndex > 0 && !isLastStep && (
+            <button
+              type="button"
+              onClick={goToPrevStep}
+              className="w-full mt-6 h-12 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-2xl border border-border hover:border-foreground/30 bg-card"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>이전 단계로</span>
+            </button>
+          )}
         </div>
       </main>
 
