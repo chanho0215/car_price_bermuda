@@ -215,10 +215,19 @@ def generate_price_explanation(
         "detail": "연식, 주행거리, 사고 이력, 옵션 수를 함께 반영해 가격 범위를 구성했습니다.",
         "tip": "빠르게 판매하려면 빠른 판매가를, 여유가 있다면 적정 판매가부터 시작해 보세요.",
         "source": "fallback",
+        "debug": {
+            "openai_enabled": bool(openai_client),
+            "reason": "fallback_default",
+        },
     }
 
     if not openai_client:
-        return default_result
+        result = default_result.copy()
+        result["debug"] = {
+            "openai_enabled": False,
+            "reason": "missing_openai_api_key",
+        }
+        return result
 
     accident_text = (
         "사고 이력 있음"
@@ -288,9 +297,18 @@ def generate_price_explanation(
             "detail": result.get("detail", default_result["detail"]),
             "tip": result.get("tip", default_result["tip"]),
             "source": "openai",
+            "debug": {
+                "openai_enabled": True,
+                "reason": "success",
+            },
         }
-    except Exception:
-        return default_result
+    except Exception as exc:
+        result = default_result.copy()
+        result["debug"] = {
+            "openai_enabled": bool(openai_client),
+            "reason": str(exc)[:300],
+        }
+        return result
 
 @app.get("/")
 def root():
@@ -299,6 +317,14 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/openai-health")
+def openai_health():
+    return {
+        "openai_api_key_loaded": bool(OPENAI_API_KEY),
+        "openai_client_initialized": bool(openai_client),
+    }
 
 
 @app.post("/predict")
