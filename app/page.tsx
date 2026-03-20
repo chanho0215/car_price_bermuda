@@ -81,6 +81,7 @@ type Step =
   | "options"
 
 type EditSection = "basic" | "status" | "accident" | "options"
+const PREDICT_TIMEOUT_MS = 30000
 
 const sectionToStep: Record<EditSection, Step> = {
   basic: "manufacturer",
@@ -144,13 +145,22 @@ export default function Home() {
       setIsLoading(true)
 
       try {
-        const res = await fetch("/api/predict", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(vehicleData),
-        })
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), PREDICT_TIMEOUT_MS)
+        let res: Response
+
+        try {
+          res = await fetch("/api/predict", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(vehicleData),
+            signal: controller.signal,
+          })
+        } finally {
+          clearTimeout(timeoutId)
+        }
 
         const rawText = await res.text()
         let result: PredictionData | { detail?: string } = {}
@@ -170,6 +180,10 @@ export default function Home() {
         setPrediction(result as PredictionData)
       } catch (apiError) {
         console.error("Predict API error:", apiError)
+
+        if (apiError instanceof Error && apiError.name === "AbortError") {
+          throw new Error("가격 계산 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.")
+        }
 
         const isLocalhost =
           typeof window !== "undefined" &&

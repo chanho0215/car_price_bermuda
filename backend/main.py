@@ -293,6 +293,7 @@ def generate_price_explanation(
         response = openai_client.chat.completions.create(
             model="gpt-4.1-mini",
             response_format={"type": "json_object"},
+            timeout=15.0,
             messages=[
                 {
                     "role": "system",

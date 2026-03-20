@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 const DEFAULT_BACKEND_URL = "http://127.0.0.1:8000"
+const BACKEND_TIMEOUT_MS = 25000
 
 function getBackendBaseUrl() {
   return (
@@ -38,15 +39,24 @@ export async function POST(request: Request) {
     }
 
     const backendUrl = buildPredictUrl(backendBaseUrl)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), BACKEND_TIMEOUT_MS)
 
-    const response = await fetch(backendUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body,
-      cache: "no-store",
-    })
+    let response: Response
+
+    try {
+      response = await fetch(backendUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body,
+        cache: "no-store",
+        signal: controller.signal,
+      })
+    } finally {
+      clearTimeout(timeoutId)
+    }
 
     const responseText = await response.text()
     const contentType = response.headers.get("content-type") || ""
@@ -89,6 +99,13 @@ export async function POST(request: Request) {
       { status: 502 },
     )
   } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      return NextResponse.json(
+        { detail: "가격 예측 요청 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요." },
+        { status: 504 },
+      )
+    }
+
     const detail =
       error instanceof Error
         ? error.message
