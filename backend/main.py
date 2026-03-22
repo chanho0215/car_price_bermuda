@@ -89,6 +89,29 @@ class PredictRequest(BaseModel):
     options: list[str] = []
 
 
+class ExplainPriceRequest(BaseModel):
+    manufacturer: str
+    model: str
+    trim: str = ""
+    year: str
+    displacement: str
+    fuel: str
+    transmission: str
+    vehicleClass: str
+    seats: str
+    color: str
+    mileage: str
+    accident: str
+    exchangeCount: str = "없음"
+    paintCount: str = "없음"
+    insuranceCount: str = "없음"
+    corrosion: str = "없음"
+    options: list[str] = []
+    fastPrice: float
+    fairPrice: float
+    highPrice: float
+
+
 def resolve_existing_path(paths: list[Path]) -> Path:
     for path in paths:
         if path.exists():
@@ -260,7 +283,7 @@ def generate_price_explanation(
 출력 형식:
 {{
   "summary": "가격 형성 핵심 이유를 한 문장으로 요약",
-  "detail": "2~3문장 설명",
+  "detail": "3문장 설명",
   "tip": "판매 팁 한 문장"
 }}
 
@@ -303,7 +326,7 @@ def generate_price_explanation(
         response = openai_client.chat.completions.create(
             model="gpt-4.1-mini",
             response_format={"type": "json_object"},
-            timeout=15.0,
+            timeout=25.0,
             messages=[
                 {
                     "role": "system",
@@ -324,7 +347,7 @@ def generate_price_explanation(
                     "content": prompt,
                 },
             ],
-            max_tokens=300,
+            max_tokens=140,
             temperature=0.3,
         )
 
@@ -391,13 +414,6 @@ def predict(req: PredictRequest):
         q05, q50, q95 = sorted([pred_fast, pred_mid, pred_high])
         adjusted = adjust_to_c2c_prices(q05, q50, q95)
 
-        explanation = generate_price_explanation(
-            form_data=form_data,
-            fast_price=adjusted["fast"],
-            fair_price=adjusted["fair"],
-            high_price=adjusted["high"],
-        )
-
         return {
             "fastPrice": adjusted["fast"],
             "fairPrice": adjusted["fair"],
@@ -409,7 +425,21 @@ def predict(req: PredictRequest):
                 "trustDiscount": adjusted["trustDiscount"],
                 "baseQ50": round(q50, 0),
             },
-            "explanation": explanation,
         }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/explain-price")
+def explain_price(req: ExplainPriceRequest):
+    try:
+        form_data = req.model_dump()
+        explanation = generate_price_explanation(
+            form_data=form_data,
+            fast_price=req.fastPrice,
+            fair_price=req.fairPrice,
+            high_price=req.highPrice,
+        )
+        return {"explanation": explanation}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
