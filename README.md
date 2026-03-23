@@ -182,7 +182,7 @@ npm run backend:dev
 | 프런트엔드 | Next.js / React / TypeScript |
 | 백엔드 | FastAPI / Python |
 | 배포 환경 | Vercel / Render |
-| 웹페이지 |(https://car-price-bermuda.vercel.app/)|
+| 웹페이지 |https://car-price-bermuda.vercel.app/|
 
 ## 3. 일정 계획
 
