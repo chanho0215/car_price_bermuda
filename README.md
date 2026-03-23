@@ -1,14 +1,97 @@
-# fa08-2nd-BERMUDA
+# Bermuda | C2C 중고차 적정 판매가격 예측 및 판매 지원 서비스
 
-중고차 판매가 예측을 위한 Next.js 프런트엔드와 FastAPI 백엔드가 함께 들어 있는 프로젝트입니다.
+> **개인 중고차 판매자가 “얼마에 올려야 팔릴까?”를 더 합리적으로 판단할 수 있도록 돕는 AI 기반 가격 예측 서비스**  
+> 공개 중고차 매물 데이터를 바탕으로 차량 정보를 입력하면 **빠른 판매가 / 적정 판매가 / 기대 판매가**를 제안하고, 가격 형성 이유까지 함께 안내합니다.
 
-## 구조
+<p align="left">
+  <img src="https://img.shields.io/badge/Team-Bermuda-1f6feb" alt="Team Bermuda" />
+  <img src="https://img.shields.io/badge/Frontend-Next.js-black" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Backend-FastAPI-009688" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/ML-XGBoost%20%2F%20Quantile-orange" alt="ML" />
+  <img src="https://img.shields.io/badge/Deploy-Vercel%20%2B%20Render-blue" alt="Deploy" />
+</p>
+
+## 프로젝트 한눈에 보기
+
+| 항목 | 내용 |
+| --- | --- |
+| 팀명 | Bermuda |
+| 팀원 | 박찬호 · 이동현 · 최아영 |
+| 프로젝트 유형 | AI 기반 가격 예측 서비스 |
+| 도메인 | C2C 중고차 개인 판매 지원 |
+| 핵심 결과 | 빠른 판매가 / 적정 판매가 / 기대 판매가 제안 |
+| 구현 범위 | 데이터 수집 · 전처리 · 모델 학습 · API · 프런트엔드 · 배포 |
+| 프런트엔드 | Next.js · React · TypeScript |
+| 백엔드 | FastAPI · Python |
+| 배포 환경 | Vercel · Render |
+| 저장소 | <https://github.com/chanho0215/car_price_bermuda> |
+
+## 왜 만들었나
+
+중고차 개인 판매자는 차량 상태를 가장 잘 알고 있어도, **정작 얼마에 올려야 적절한지 판단하기 어려운 순간**을 자주 마주합니다.
+너무 높게 올리면 거래가 지연되고, 너무 낮게 올리면 손해를 볼 수 있습니다.
+
+Bermuda는 이 문제를 해결하기 위해 기획된 서비스입니다.  
+단순히 평균 시세 하나를 보여주는 대신, 판매 목적에 따라 참고할 수 있는 **전략형 가격 가이드**를 제공하고, 입력값 검증과 검토 화면을 통해 **등록 전 의사결정 경험 자체를 돕는 것**을 목표로 했습니다.
+
+## 서비스 핵심 아이디어
+
+- **하나의 정답 가격** 대신 판매 전략별 가격을 제안합니다.
+- 예측값만 던지고 끝내지 않고, **입력 정보 요약과 가격 설명**을 함께 제공합니다.
+- 데이터 수집부터 모델 학습, API 서빙, 프런트 구현, 배포까지 이어지는 **엔드투엔드 AI 서비스 포트폴리오**를 지향합니다.
+
+## 주요 기능
+
+- 차량 정보 입력 및 필수값 검증
+- 입력 내용 검토 화면 제공
+- 예측 API 연동을 통한 가격 산정
+- 빠른 판매가 / 적정 판매가 / 기대 판매가 제안
+- 가격 설명 생성
+- 프런트엔드 / 백엔드 분리형 구조
+- 로컬 실행 및 배포 환경 구성
+
+## 사용자 흐름
+
+```mermaid
+flowchart LR
+    A["Welcome"] --> B["차량 정보 입력"]
+    B --> C["입력 내용 검토"]
+    C --> D["가격 예측 요청"]
+    D --> E["빠른 판매가 / 적정 판매가 / 기대 판매가"]
+    E --> F["가격 설명 확인"]
+    C -->|"수정 필요"| B
+```
+
+## 시스템 아키텍처 요약
+
+```mermaid
+flowchart LR
+    U["User"] --> FE["Next.js Frontend"]
+    FE --> API1["Next.js API Route: /api/predict"]
+    FE --> API2["Next.js API Route: /api/explain-price"]
+
+    API1 --> BE1["FastAPI Endpoint: /predict"]
+    API2 --> BE2["FastAPI Endpoint: /explain-price"]
+
+    BE1 --> PP["전처리 로직"]
+    PP --> ML["Quantile Prediction Models"]
+    ML --> ADJ["C2C 가격 조정 로직"]
+    ADJ --> FE
+
+    BE2 --> EXP["가격 설명 생성 로직"]
+    EXP --> OA["OpenAI API Optional"]
+    EXP --> FE
+```
+
+## 저장소 구조
 
 ```text
-app/                 Next.js 앱 라우터
-components/screens/  화면 단위 프런트엔드 컴포넌트
-backend/             FastAPI API, 전처리 코드, 학습된 모델 파일
-public/              아이콘 등 정적 자산
+app/                        Next.js 앱 라우터
+components/screens/         화면 단위 프런트엔드 컴포넌트
+backend/                    FastAPI API, 전처리 코드, 학습된 모델 파일
+machine_learning/           크롤링, 전처리, 학습 실험 산출물
+public/                     아이콘 등 정적 자산
+README.md                   프로젝트 문서
 ```
 
 ## 실행 방법
@@ -42,11 +125,13 @@ npm run backend:dev
 - `backend/main.py`: 예측 API와 가격 설명 생성 로직이 들어 있습니다.
 - `backend/preprocess.py`: 입력값을 모델 피처 형태로 변환합니다.
 - `backend/models/`: 예측에 필요한 학습 결과물입니다.
+- `machine_learning/`: 크롤링, 전처리, 모델 실험 및 학습 관련 산출물을 관리합니다.
 
 ## 비고
 
-- 저장소에는 실행에 필요한 모델 파일만 남기고, 생성 산출물과 사용하지 않는 v0 보일러플레이트는 제거했습니다.
+- 저장소에는 실행에 필요한 모델 파일만 남기고, 생성 산출물과 사용하지 않는 보일러플레이트는 정리했습니다.
 - 현재 패키지 매니저는 `npm` 기준으로 정리되어 있습니다.
+- 회고, 대시보드 스크린샷, 배포 링크 등 일부 항목은 추후 업데이트를 전제로 빈칸을 유지했습니다.
 
 
 ---
