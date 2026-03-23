@@ -24,7 +24,7 @@
 | 프런트엔드 | Next.js · React · TypeScript |
 | 백엔드 | FastAPI · Python |
 | 배포 환경 | Vercel · Render |
-| 웹사이트 | https://car-price-bermuda.vercel.app/ |
+| 웹페이지 | https://car-price-bermuda.vercel.app/ |
 
 ## 왜 만들었나
 
@@ -144,7 +144,7 @@ npm run backend:dev
 - **Bermuda | C2C 중고차 적정 판매가격 예측 및 판매 지원 서비스**
 
 ### 1-2. 프로젝트 목표
-- 개인 중고차 판매자가 차량 조건을 바탕으로 **적정 등록 가격을 합리적으로 판단**할 수 있도록 지원
+- 개인 고차 판매자가 차량 조건을 바탕으로 **적정 등록 가격을 합리적으로 판단**할 수 있도록 지원
 - 단일 가격 제시가 아닌 **빠른 판매가 / 적정 판매가 / 기대 판매가**의 3단계 가격 전략 제공
 - 입력 검증과 검토 화면을 포함한 UX를 통해 **등록 전 의사결정 정확도 향상**
 - 데이터 수집부터 전처리, 모델 학습, API 연동, 프런트엔드 구현, 배포까지 연결되는 **서비스형 AI 프로젝트 포트폴리오 구축**
@@ -182,7 +182,7 @@ npm run backend:dev
 | 프런트엔드 | Next.js / React / TypeScript |
 | 백엔드 | FastAPI / Python |
 | 배포 환경 | Vercel / Render |
-| 저장소 | https://github.com/chanho0215/car_price_bermuda |
+| 웹페이지 |(https://car-price-bermuda.vercel.app/)|
 
 ## 3. 일정 계획
 
